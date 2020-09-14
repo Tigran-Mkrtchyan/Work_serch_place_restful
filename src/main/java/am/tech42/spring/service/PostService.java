@@ -2,6 +2,7 @@ package am.tech42.spring.service;
 
 import am.tech42.spring.dto.PostDto;
 import am.tech42.spring.dto.PostHeader;
+import am.tech42.spring.exception.UnknownUserException;
 import am.tech42.spring.model.*;
 import am.tech42.spring.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class PostService {
     @Autowired
     private SkillRepository skillRepository;
 
-    public void addPost(PostDto postDto) {
+    public void addPost(PostDto postDto) throws UnknownUserException {
         Post post = new Post();
         JobType jobType = jobTypeRepository.getOne(postDto.getJobTypeId());
         Skill skill = skillRepository.getOne(postDto.getSkillId());
@@ -35,8 +36,9 @@ public class PostService {
             level = levelRepository.getOne(levelId);
             levels.add(level);
         }
-        Company company = companyRepository.findCompanyByUserId(postDto.getUserId()).get();
-      //  post.addCompany(company);
+        Company company = companyRepository.findCompanyByUserId(postDto.getUserId()).orElseThrow(
+                ()-> new UnknownUserException("User not found")
+        );
         post.setCompany(company);
         post.setDeadline(Date.valueOf(postDto.getDeadline()));
         post.setDescription(postDto.getDescription());

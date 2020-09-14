@@ -4,10 +4,13 @@ package am.tech42.spring.service;
 import am.tech42.spring.dto.EmployeeDto;
 import am.tech42.spring.dto.ReturnEmployeeDto;
 import am.tech42.spring.dto.ReturnUserDto;
+import am.tech42.spring.exception.EmailNotExistsException;
+import am.tech42.spring.exception.UnknownUserException;
 import am.tech42.spring.model.Employee;
 import am.tech42.spring.model.User;
 import am.tech42.spring.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +27,7 @@ public class EmployeeService {
     @Autowired
     private  UserService userService;
 
-    public ReturnUserDto saveEmployee(EmployeeDto employeeDto){
+    public ReturnUserDto saveEmployee(EmployeeDto employeeDto) throws EmailNotExistsException {
         User user = userService.createUser(employeeDto);
         Employee employee = new Employee();
         employee.setUser(user);
@@ -35,7 +38,7 @@ public class EmployeeService {
         ReturnUserDto newUser = new ReturnUserDto();
         newUser.setUserId(user.getId());
         newUser.setName(employeeDto.getFirstName());
-        newUser.setRole(user.getRole());
+        newUser.setRole(user.getRole().name());
         return newUser;
     }
 
@@ -55,8 +58,10 @@ public class EmployeeService {
         return cvPath;
     }
 
-    public ReturnEmployeeDto getEmployee(String id) {
-        Employee employee = employeeRepository.findEmployeeByUserId(id).get();
+    public ReturnEmployeeDto getEmployee(String id) throws UnknownUserException {
+        Employee employee = employeeRepository.findEmployeeByUserId(id).orElseThrow(
+                () -> new UnknownUserException("user not found")
+        );
         ReturnEmployeeDto employeeDto = new ReturnEmployeeDto();
         employeeDto.setFirstName(employee.getFirstName());
         employeeDto.setLastName(employee.getLastName());

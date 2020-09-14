@@ -1,5 +1,6 @@
 package am.tech42.spring.model;
 
+import am.tech42.spring.model.enums.Role;
 import lombok.Data;
 import javax.persistence.*;
 
@@ -11,9 +12,10 @@ public class User  {
     @Id
     @Column(name ="id" )
     private String id ;
- 
+
+    @Enumerated(value = EnumType.STRING)
     @Column(name = "role")
-    private String role;
+    private Role role;
 
     @Column(name = "username")
     private  String username;

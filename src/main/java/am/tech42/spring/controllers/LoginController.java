@@ -2,6 +2,7 @@ package am.tech42.spring.controllers;
 
 import am.tech42.spring.dto.ReturnUserDto;
 import am.tech42.spring.dto.UserDto;
+import am.tech42.spring.exception.UnknownUserException;
 import am.tech42.spring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,8 +20,13 @@ public class LoginController {
 
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ReturnUserDto> loginUser(@RequestBody UserDto userDto){
-        ReturnUserDto user = userService.getUser(userDto);
-            return new ResponseEntity<>(user,HttpStatus.OK);
+        ReturnUserDto user;
+        try {
+            user = userService.getUser(userDto);
+        } catch (UnknownUserException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+        return new ResponseEntity<>(user,HttpStatus.OK);
     }
 
 
